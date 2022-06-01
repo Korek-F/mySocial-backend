@@ -26,7 +26,7 @@ class CreateUserView(generics.GenericAPIView):
         token = RefreshToken.for_user(user).access_token
         current_site = get_current_site(request).domain
         relativeLink = reverse('email-verify')
-        absurl = 'http://'+current_site+relativeLink+"?token="+str(token)
+        absurl = 'http://'+"localhost:3000/activate/"+str(token)
 
         email_content = f'Hi {user.username} \n Use this link to activate your accout \n {absurl}' 
 
@@ -37,8 +37,8 @@ class CreateUserView(generics.GenericAPIView):
 
 class VerifyEmail(views.APIView):
 
-    def get(self, request):
-        token = request.GET.get('token')
+    def post(self, request):
+        token = request.data["token"]
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             user = User.objects.get(id=payload['user_id'])
