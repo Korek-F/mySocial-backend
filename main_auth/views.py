@@ -1,6 +1,6 @@
 from .models import User
-from .serializers import UserCreationSerializer
-
+from .serializers import UserCreationSerializer, UserSerializer
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import generics, status, permissions, views
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -50,3 +50,9 @@ class VerifyEmail(views.APIView):
             return Response({'error': 'Activation Expired'}, status=status.HTTP_400_BAD_REQUEST)
         except jwt.exceptions.DecodeError as identifier:
             return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+
+class UserDetail(views.APIView):
+    def get(self, request, username):
+        user = get_object_or_404(User, username=username)
+        serializer = UserSerializer(user, many=False,context={'request':request})
+        return Response(serializer.data, status=status.HTTP_200_OK)

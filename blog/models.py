@@ -11,3 +11,6 @@ class Post(models.Model):
 
     def __str__(self):
         return self.author.username + " - " +self.body[:20]
+
+    class Meta:
+        ordering = ["-created"]
