@@ -13,6 +13,8 @@ from django.urls import reverse
 
 import jwt
 # Create your views here.
+
+
 class CreateUserView(generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = UserCreationSerializer
@@ -52,7 +54,7 @@ class VerifyEmail(views.APIView):
             return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserDetail(views.APIView):
-    def get(self, request, username):
-        user = get_object_or_404(User, username=username)
+    def get(self, request, id):
+        user = get_object_or_404(User, id=id)
         serializer = UserSerializer(user, many=False,context={'request':request})
         return Response(serializer.data, status=status.HTTP_200_OK)

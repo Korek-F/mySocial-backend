@@ -19,8 +19,8 @@ class UserSerializer(serializers.ModelSerializer):
     following = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
-        model=  User 
-        fields = "__all__"
+        model=  User
+        fields = ("id","followers","following","is_followed_by_me","username","email","created_at","avatar","cover")
         extra_kwargs = {'password': {'write_only': True}}
 
     def get_followers(self, obj):
@@ -29,6 +29,8 @@ class UserSerializer(serializers.ModelSerializer):
     def get_following(self, obj):
         return obj.following.count()
     
-    def is_followed_by_me(self,obj):
+    def get_is_followed_by_me(self,obj):
         current_user = self.context.get('request').user
+        print(current_user)
+
         return True if current_user in obj.followed.all() else False
