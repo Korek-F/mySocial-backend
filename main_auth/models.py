@@ -34,7 +34,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     updated_at = models.DateTimeField(auto_now=True)
     following = models.ManyToManyField("User",related_name="followed", symmetrical=False, blank=True)
     avatar = models.ImageField(blank=True, default="default.png",upload_to="user_avatars")
-    cover = models.ImageField(blank=True, upload_to="user_covers")
+    cover = models.ImageField(blank=True, default="default-cover.jpg",upload_to="user_covers")
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']

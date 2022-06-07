@@ -4,6 +4,7 @@ from .models import Post
 from .serializers import PostSerializer
 from rest_framework.permissions  import IsAuthenticatedOrReadOnly
 from rest_framework import exceptions
+from main_auth.models import User
 # Create your views here.
 class PostView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -33,4 +34,15 @@ class PostView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 
+class UserPostView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self, username):
+        user = User.objects.all().get(username=username)
+        return Post.objects.all().filter(author=user)
+    
+    def get(self, request,username):
+        posts =self.get_queryset(username)
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data)
     

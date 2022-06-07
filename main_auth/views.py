@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework import generics, status, permissions, views
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from django.core.mail import send_mail
 from django.conf import settings
@@ -13,6 +15,18 @@ from django.urls import reverse
 
 import jwt
 # Create your views here.
+
+class UserTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['user_username'] = user.username
+        return token
+
+
+class UserTokenObtainPairView(TokenObtainPairView):
+    serializer_class = UserTokenObtainPairSerializer
+
 
 
 class CreateUserView(generics.GenericAPIView):
@@ -54,7 +68,7 @@ class VerifyEmail(views.APIView):
             return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserDetail(views.APIView):
-    def get(self, request, id):
-        user = get_object_or_404(User, id=id)
+    def get(self, request, username):
+        user = get_object_or_404(User, username=username)
         serializer = UserSerializer(user, many=False,context={'request':request})
         return Response(serializer.data, status=status.HTTP_200_OK)
