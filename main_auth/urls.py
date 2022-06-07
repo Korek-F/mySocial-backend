@@ -11,4 +11,5 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view()),
     path('email-verify/', views.VerifyEmail.as_view(), name="email-verify"),
     path('get-user/<str:username>', views.UserDetail.as_view()),
+    path('follow-action/', views.follow_action)
 ]

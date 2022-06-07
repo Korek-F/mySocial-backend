@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import generics, status, permissions, views
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.decorators import api_view
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -72,3 +73,18 @@ class UserDetail(views.APIView):
         user = get_object_or_404(User, username=username)
         serializer = UserSerializer(user, many=False,context={'request':request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(["POST"])
+def follow_action(request):
+    username = request.data.get('username')
+    profile = request.user
+    if not profile:
+        return Response({'error': 'Annonymous User'}, status=status.HTTP_400_BAD_REQUEST)
+    f_user = User.objects.get(username=username)
+
+    if f_user in profile.following.all():
+        profile.following.remove(f_user)
+        return Response({'follow':False, "followers": f_user.followed.count()})
+    else: 
+        profile.following.add(f_user)
+        return Response({'follow':True, "followers":f_user.followed.count()})
