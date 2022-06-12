@@ -1,12 +1,13 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView, Response, status
 from .models import Post
 from .serializers import PostSerializer
 from rest_framework.permissions  import IsAuthenticatedOrReadOnly
 from rest_framework import exceptions
 from main_auth.models import User
+from .permissions import IsAuthorOrReadOnly
 # Create your views here.
-class PostView(APIView):
+class PostsView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
@@ -14,7 +15,7 @@ class PostView(APIView):
     
     def get(self, request):
         posts = self.get_queryset()
-        serializer = PostSerializer(posts, many=True)
+        serializer = PostSerializer(posts, many=True,context={'request':request})
         return Response(serializer.data)
     
     def post(self, request):
@@ -30,9 +31,24 @@ class PostView(APIView):
             title=data.get("title")
         )
         post.save()
-        serializer = PostSerializer(post)
+        serializer = PostSerializer(post,context={'request':request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
+
+    
+class PostView(APIView):
+    permission_classes = (IsAuthorOrReadOnly, )
+
+    def get_object(self, pk):
+        return get_object_or_404(Post, pk=pk)
+
+    def delete(self, request, pk):
+        print(request.user)
+        post = self.get_object(pk)
+        self.check_object_permissions(request, post)
+        post.delete()
+        return Response("Deleted", status=status.HTTP_200_OK)
+
 
 class UserPostView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -43,6 +59,6 @@ class UserPostView(APIView):
     
     def get(self, request,username):
         posts =self.get_queryset(username)
-        serializer = PostSerializer(posts, many=True)
+        serializer = PostSerializer(posts, many=True,context={'request':request})
         return Response(serializer.data)
     

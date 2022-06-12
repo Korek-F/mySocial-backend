@@ -31,6 +31,5 @@ class UserSerializer(serializers.ModelSerializer):
     
     def get_is_followed_by_me(self,obj):
         current_user = self.context.get('request').user
-        print(current_user)
 
         return True if current_user in obj.followed.all() else False
