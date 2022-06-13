@@ -2,10 +2,12 @@ from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView, Response, status
 from .models import Post
 from .serializers import PostSerializer
-from rest_framework.permissions  import IsAuthenticatedOrReadOnly
+from rest_framework.permissions  import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework import exceptions
 from main_auth.models import User
 from .permissions import IsAuthorOrReadOnly
+
+from rest_framework.decorators import api_view, permission_classes
 # Create your views here.
 class PostsView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -62,3 +64,17 @@ class UserPostView(APIView):
         serializer = PostSerializer(posts, many=True,context={'request':request})
         return Response(serializer.data)
     
+
+@api_view(["PATCH"])
+@permission_classes((IsAuthenticated,),)
+def like_dislike_post(request):
+    post_id = request.data.get("id")
+    user = request.user
+    post = get_object_or_404(Post, pk=post_id)
+    if user in post.likes.all():
+        post.likes.remove(user)
+    else:
+        post.likes.add(user)
+    post.save()
+    serializer = PostSerializer(post, many=False,context={'request':request})
+    return Response(serializer.data, status=status.HTTP_200_OK)
