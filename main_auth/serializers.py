@@ -11,7 +11,7 @@ class UserCreationSerializer(serializers.ModelSerializer):
 class UserLessInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["username", "avatar"]
+        fields = ["username", "avatar", "name"]
 
 class UserSerializer(serializers.ModelSerializer):
     is_followed_by_me = serializers.SerializerMethodField(read_only=True)
@@ -20,8 +20,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model=  User
-        fields = ("id","followers","following","is_followed_by_me","username","email","created_at","avatar","cover")
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ("id","followers","following","is_followed_by_me","username","email","created_at","avatar","cover","name")
+        extra_kwargs = {'password': {'write_only': True}, 'username':{'read_only':True}}
 
     def get_followers(self, obj):
         return obj.followed.count()
@@ -33,3 +33,4 @@ class UserSerializer(serializers.ModelSerializer):
         current_user = self.context.get('request').user
 
         return True if current_user in obj.followed.all() else False
+    

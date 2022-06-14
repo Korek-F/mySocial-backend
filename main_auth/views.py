@@ -1,3 +1,4 @@
+
 from .models import User
 from .serializers import UserCreationSerializer, UserSerializer
 from django.shortcuts import get_object_or_404
@@ -5,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import generics, status, permissions, views
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -15,6 +17,8 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 
 import jwt
+
+
 # Create your views here.
 
 class UserTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -88,3 +92,14 @@ def follow_action(request):
     else: 
         profile.following.add(f_user)
         return Response({'follow':True, "followers":f_user.followed.count()})
+
+class EditUser(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (IsAuthenticated,)
+    def patch(self, request):
+        user = request.user
+        print(request.data)
+        serializer = UserSerializer(user, request.data, partial=True, context={'request':request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)  
+        return Response("Value error", status=status.HTTP_406_NOT_ACCEPTABLE)
