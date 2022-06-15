@@ -45,8 +45,6 @@ class CreateUserView(generics.GenericAPIView):
         user_data = serializer.data
         user = User.objects.get(username=user_data['username'])
         token = RefreshToken.for_user(user).access_token
-        current_site = get_current_site(request).domain
-        relativeLink = reverse('email-verify')
         absurl = 'http://'+"localhost:3000/activate/"+str(token)
 
         email_content = f'Hi {user.username} \n Use this link to activate your accout \n {absurl}' 
