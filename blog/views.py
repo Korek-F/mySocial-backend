@@ -6,6 +6,7 @@ from rest_framework.permissions  import IsAuthenticatedOrReadOnly, IsAuthenticat
 from rest_framework import exceptions
 from main_auth.models import User
 from .permissions import IsAuthorOrReadOnly
+from core.pagination import MyPagination
 
 from rest_framework.decorators import api_view, permission_classes
 # Create your views here.
@@ -18,7 +19,9 @@ class PostsView(APIView):
     def get(self, request):
         posts = self.get_queryset()
         serializer = PostSerializer(posts, many=True,context={'request':request})
-        return Response(serializer.data)
+        paginator = MyPagination()
+        page = paginator.paginate_queryset(serializer.data, request)
+        return paginator.get_paginated_response(page)
     
     def post(self, request):
         data = request.data 
