@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView, Response, status
 from .models import Post
-from .serializers import PostSerializer
+from .serializers import PostSerializer, CommentSerializer
 from rest_framework.permissions  import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework import exceptions
 from main_auth.models import User
@@ -55,6 +55,20 @@ class PostView(APIView):
         return Response("Deleted", status=status.HTTP_200_OK)
 
 
+class CommentsView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly,]
+
+    def get_queryset(self, id):
+        return Post.objects.get(pk=id).post_comments.all()
+
+    def get(self, request, id):
+        comments = self.get_queryset(id)
+        print(comments)
+        serialzer =  CommentSerializer(comments, many=True, context={'request':request})
+        return Response(serialzer.data)
+    
+ 
+
 class UserPostView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -81,3 +95,4 @@ def like_dislike_post(request):
     post.save()
     serializer = PostSerializer(post, many=False,context={'request':request})
     return Response(serializer.data, status=status.HTTP_200_OK)
+

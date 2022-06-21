@@ -1,4 +1,3 @@
-from venv import create
 from django.db import models
 from main_auth.models import User
 
@@ -15,3 +14,10 @@ class Post(models.Model):
 
     class Meta:
         ordering = ["-created"]
+
+class Comment(models.Model):
+    author = models.ForeignKey(User, related_name="comment_onwer", on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, related_name="post_comments", on_delete=models.CASCADE)
+    likes = models.ManyToManyField(User, related_name="comment_liked", blank=True)
+    content = models.TextField(max_length=1000)
+    created = models.DateTimeField(auto_now_add=True)
