@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView, Response, status
 from .models import Post
-from .serializers import PostSerializer, CommentSerializer
+from .serializers import PostSerializer, PostDetailSerializer
 from rest_framework.permissions  import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework import exceptions
 from main_auth.models import User
@@ -55,16 +55,15 @@ class PostView(APIView):
         return Response("Deleted", status=status.HTTP_200_OK)
 
 
-class CommentsView(APIView):
+class FullPostView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly,]
 
     def get_queryset(self, id):
-        return Post.objects.get(pk=id).post_comments.all()
+        return Post.objects.get(pk=id)
 
     def get(self, request, id):
-        comments = self.get_queryset(id)
-        print(comments)
-        serialzer =  CommentSerializer(comments, many=True, context={'request':request})
+        post = self.get_queryset(id)
+        serialzer =  PostDetailSerializer(post, many=False, context={'request':request})
         return Response(serialzer.data)
     
  
