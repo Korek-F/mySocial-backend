@@ -21,3 +21,11 @@ class Comment(models.Model):
     likes = models.ManyToManyField(User, related_name="comment_liked", blank=True)
     content = models.TextField(max_length=1000)
     created = models.DateTimeField(auto_now_add=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name="comment_child")
+
+    class Meta:
+        ordering = ["-created"]
+        
+    @property 
+    def like_count(self):
+        return self.likes.count()

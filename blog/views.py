@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView, Response, status
 from .models import Post
-from .serializers import PostSerializer, PostDetailSerializer
+from .serializers import PostSerializer, CommentSerializer
 from rest_framework.permissions  import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework import exceptions
 from main_auth.models import User
@@ -9,6 +9,8 @@ from .permissions import IsAuthorOrReadOnly
 from core.pagination import MyPagination
 
 from rest_framework.decorators import api_view, permission_classes
+
+
 # Create your views here.
 class PostsView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -42,28 +44,34 @@ class PostsView(APIView):
 
     
 class PostView(APIView):
-    permission_classes = (IsAuthorOrReadOnly, )
+    permission_classes = (IsAuthorOrReadOnly,)
 
     def get_object(self, pk):
         return get_object_or_404(Post, pk=pk)
 
+    def get(self, request,pk):
+        print("trouble")
+        post = self.get_object(pk)
+        serializer = PostSerializer(post,context={'request':request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def delete(self, request, pk):
-        print(request.user)
+        print("trouble")
         post = self.get_object(pk)
         self.check_object_permissions(request, post)
         post.delete()
         return Response("Deleted", status=status.HTTP_200_OK)
 
 
-class FullPostView(APIView):
+class CommentsView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly,]
 
     def get_queryset(self, id):
-        return Post.objects.get(pk=id)
+        return Post.objects.get(pk=id).post_comments.all()
 
     def get(self, request, id):
         post = self.get_queryset(id)
-        serialzer =  PostDetailSerializer(post, many=False, context={'request':request})
+        serialzer =  CommentSerializer(post, many=True, context={'request':request})
         return Response(serialzer.data)
     
  
