@@ -25,9 +25,15 @@ class TypeBaseSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(TypeBaseSerializer):
+    comment_child = serializers.SerializerMethodField(read_only=True)
     class Meta: 
         model = Comment
         fields = '__all__'
+
+    def get_comment_child(self,obj):
+        serializer = CommentSerializer(obj.comment_child, many=True,
+        context={'request':self.context.get('request')})
+        return serializer.data
      
   
 
@@ -39,8 +45,8 @@ class PostSerializer(TypeBaseSerializer):
         fields ='__all__'
 
     def get_most_popular_comment(self, obj):
-        if obj.post_comments.all().count()>0:
-            comment = obj.post_comments.all().first()
+        if obj.post_comments.all().filter(parent__isnull=True).count()>0:
+            comment = obj.post_comments.all().filter(parent__isnull=True).first()
             return CommentSerializer(comment, many=False, 
             context={'request':self.context.get('request')}).data
         else:

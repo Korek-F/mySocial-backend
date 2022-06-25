@@ -67,7 +67,7 @@ class CommentsView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly,]
 
     def get_queryset(self, id):
-        return Post.objects.get(pk=id).post_comments.all()
+        return Post.objects.get(pk=id).post_comments.all().filter(parent__isnull=True)
 
     def get(self, request, id):
         post = self.get_queryset(id)
