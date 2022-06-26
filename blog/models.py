@@ -29,3 +29,6 @@ class Comment(models.Model):
     @property 
     def like_count(self):
         return self.likes.count()
+
+    def __str__(self):
+        return str(self.pk) + " - " + self.author.username + " - " +self.content[:20]

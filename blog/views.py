@@ -1,6 +1,7 @@
+from multiprocessing import context
 from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView, Response, status
-from .models import Post
+from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 from rest_framework.permissions  import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework import exceptions
@@ -103,3 +104,16 @@ def like_dislike_post(request):
     serializer = PostSerializer(post, many=False,context={'request':request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(["PATCH"])
+@permission_classes((IsAuthenticated,),)
+def like_dislike_comment(request):
+    comment_id = request.data.get("id")
+    user = request.user 
+    comment = get_object_or_404(Comment, pk=comment_id)
+    if user in comment.likes.all():
+        comment.likes.remove(user)
+    else:
+        comment.likes.add(user)
+    comment.save() 
+    serializer = CommentSerializer(comment, many=False, context={'request':request})
+    return Response(serializer.data, status=status.HTTP_200_OK)
