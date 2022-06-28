@@ -24,7 +24,7 @@ class Comment(models.Model):
     parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name="comment_child")
 
     class Meta:
-        ordering = ["-created"]
+        ordering = ["created"]
         
     @property 
     def like_count(self):
