@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Comment
+from .models import Notification, Post, Comment
 from main_auth.serializers import UserLessInfoSerializer 
 
 
@@ -60,4 +60,9 @@ class PostDetailSerializer(TypeBaseSerializer):
         model = Post
         fields ='__all__'
 
+class NotificationSerializer(serializers.ModelSerializer):
+    from_user = UserLessInfoSerializer(read_only=True, many=False)
+    class Meta:
+        model = Notification
+        fields = "__all__"
 

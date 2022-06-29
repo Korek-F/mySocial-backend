@@ -13,4 +13,5 @@ urlpatterns = [
     path("comment/like-dislike", views.like_dislike_comment),
     path("comment/<int:pk>/", views.CommentView.as_view()),
     path("comment-delete/<int:pk>", views.CommentView.as_view()),
+    path("notifications", views.notifications),
 ]

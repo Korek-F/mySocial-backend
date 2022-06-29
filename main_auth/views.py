@@ -13,8 +13,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from django.core.mail import send_mail
 from django.conf import settings
-from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse
+
+from blog.models import Notification
 
 import jwt
 
@@ -89,6 +89,7 @@ def follow_action(request):
         return Response({'follow':False, "followers": f_user.followed.count()})
     else: 
         profile.following.add(f_user)
+        Notification.objects.get_or_create(notification_type="F",  to_user=f_user, from_user=profile)
         return Response({'follow':True, "followers":f_user.followed.count()})
 
 class EditUser(generics.RetrieveUpdateDestroyAPIView):
