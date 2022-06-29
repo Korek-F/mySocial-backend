@@ -1,9 +1,6 @@
-from asyncio import constants
-from enum import auto
-from multiprocessing import context
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView, Response, status
-from .models import Post, Comment
+from .models import Post, Comment, Notification
 from .serializers import PostSerializer, CommentSerializer
 from rest_framework.permissions  import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework import exceptions
@@ -81,10 +78,18 @@ class CommentsView(APIView):
         content = request.data.get("content")
         parent_id = request.data.get("parent_id")
         comment = Comment(author=user, post=post,content=content)
+        comment.save()
+        print(parent_id)
         if parent_id:
             parent_comment = get_object_or_404(Comment, id=parent_id)
             comment.parent = parent_comment
-        comment.save()
+            print(parent_comment.author)
+            if parent_comment.author != request.user:
+                Notification.objects.get_or_create(notification_type="CR", comment=comment, to_user=parent_comment.author, from_user=request.user)
+        else:
+            print("D")
+            if post.author != request.user:
+                Notification.objects.get_or_create(notification_type="C", post=comment.post, comment=comment, to_user=post.author, from_user=request.user)
         serialzer =  CommentSerializer(comment, many=False, context={'request':request})
         return Response(serialzer.data, status=status.HTTP_201_CREATED)
     
@@ -128,6 +133,9 @@ def like_dislike_post(request):
         post.likes.remove(user)
     else:
         post.likes.add(user)
+        if request.user != post.author:
+            Notification.objects.get_or_create(notification_type="L",
+            post=post, to_user=post.author, from_user=request.user)
     post.save()
     serializer = PostSerializer(post, many=False,context={'request':request})
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -142,6 +150,9 @@ def like_dislike_comment(request):
         comment.likes.remove(user)
     else:
         comment.likes.add(user)
+        if request.user != comment.author:
+            Notification.objects.get_or_create(notification_type="CL",
+            comment=comment, to_user=comment.author, from_user=request.user)
     comment.save() 
     serializer = CommentSerializer(comment, many=False, context={'request':request})
     return Response(serializer.data, status=status.HTTP_200_OK)

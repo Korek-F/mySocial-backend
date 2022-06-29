@@ -32,3 +32,24 @@ class Comment(models.Model):
 
     def __str__(self):
         return str(self.pk) + " - " + self.author.username + " - " +self.content[:20]
+    
+class Notification(models.Model):
+    notifi_types = [
+        ("L","Like"),
+        ("F","Follow"),
+        ("C","Comment"),
+        ("CR","Comment_response"),
+        ("LC","Like_comment"),
+    ]
+
+    notification_type = models.CharField(max_length=2, choices=notifi_types, default=None)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE,  related_name='+', blank=True, null=True)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE,  related_name='+', blank=True, null=True)
+    to_user = models.ForeignKey(User, related_name='notification_to', on_delete=models.CASCADE, null=True)
+    from_user = models.ForeignKey(User, related_name='notification_from', on_delete=models.CASCADE, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    has_been_seen = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.notification_type + " " + str(self.to_user.username)
+    
