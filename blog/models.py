@@ -1,5 +1,6 @@
 from django.db import models
 from main_auth.models import User
+from django.db.models.signals import post_save
 
 # Create your models here.
 class Post(models.Model):
@@ -50,6 +51,11 @@ class Notification(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     has_been_seen = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ["-created"]
+
     def __str__(self):
         return self.notification_type + " " + str(self.to_user.username)
+
+  
     

@@ -56,6 +56,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'blog',
+    'chat',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -88,7 +90,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'core.wsgi.application'
-
+ASGI_APPLICATION = 'core.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
@@ -166,3 +168,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
 
+if DEBUG:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer"
+        }
+    }
+else:
+    CHANNEL_LAYERS = {     
+        'default': {'BACKEND': 'channels_redis.core.RedisChannelLayer',             'CONFIG': {"hosts": [('redis', 6379)],},    
+            }, 
+    }
