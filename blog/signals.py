@@ -12,12 +12,13 @@ def create_new_notification(sender, instance, created, *args, **kwargs):
     print("TESTO")
     if created:
         channel_layer = get_channel_layer()
-        print(instance.to_user.username)
-        print(channel_layer)
         async_to_sync(channel_layer.group_send)(
             f'noti_{instance.to_user.username}',
             {
                 "type":"send_status",
-                "data":"TEST"
+                "data":{
+                    "from":instance.from_user.username,
+                    "notification_type":instance.notification_type,
+                }
             }
         )
