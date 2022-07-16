@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Notification, Post, Comment
 from main_auth.serializers import UserLessInfoSerializer 
+from django.db.models import Count
 
 
 class TypeBaseSerializer(serializers.ModelSerializer):
@@ -46,7 +47,7 @@ class PostSerializer(TypeBaseSerializer):
 
     def get_most_popular_comment(self, obj):
         if obj.post_comments.all().filter(parent__isnull=True).count()>0:
-            comment = obj.post_comments.all().filter(parent__isnull=True).first()
+            comment = obj.post_comments.all().filter(parent__isnull=True).order_by("likes")[0]
             return CommentSerializer(comment, many=False, 
             context={'request':self.context.get('request')}).data
         else:
