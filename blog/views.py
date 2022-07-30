@@ -80,18 +80,16 @@ class CommentsView(APIView):
         post = get_object_or_404(Post, pk=id)
         content = request.data.get("content")
         parent_id = request.data.get("parent_id")
-        comment = Comment(author=user, post=post,content=content)
-        comment.save()
+        comment = Comment.object.create(author=user, post=post,content=content)
         if parent_id:
             parent_comment = get_object_or_404(Comment, id=parent_id)
             comment.parent = parent_comment
-            
+            comment.save()
             if parent_comment.author != request.user:
                 Notification.objects.get_or_create(notification_type="CR", post=comment.post, comment=comment, to_user=parent_comment.author, from_user=request.user)
         else:
             if post.author != request.user:
                 Notification.objects.get_or_create(notification_type="C", post=comment.post, comment=comment, to_user=post.author, from_user=request.user)
-        comment.save()
         serialzer =  CommentSerializer(comment, many=False, context={'request':request})
         return Response(serialzer.data, status=status.HTTP_201_CREATED)
     
