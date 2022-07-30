@@ -1,26 +1,29 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView, Response, status
-from .models import Post, Comment, Notification
-from .serializers import NotificationSerializer, PostSerializer, CommentSerializer
-from rest_framework.permissions  import IsAuthenticatedOrReadOnly, IsAuthenticated
-from rest_framework import exceptions
-from main_auth.models import User
-from .permissions import IsAuthorOrReadOnly
-from core.pagination import MyPagination
-
 from rest_framework.decorators import api_view, permission_classes
 
+from rest_framework.views import APIView, Response, status
+from rest_framework.permissions  import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework import exceptions
 
-# Create your views here.
+from .models import Post, Comment, Notification
+from .serializers import NotificationSerializer, PostSerializer, CommentSerializer
+from .permissions import IsAuthorOrReadOnly
+from main_auth.models import User
+from core.pagination import MyPagination
+
+
+
 class PostsView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-    def get_queryset(self):
+    def get_queryset(self, request):
         return Post.objects.all()
+        
     
     def get(self, request):
-        posts = self.get_queryset()
+        posts = self.get_queryset(request)
         serializer = PostSerializer(posts, many=True,context={'request':request})
+       
         paginator = MyPagination()
         page = paginator.paginate_queryset(serializer.data, request)
         return paginator.get_paginated_response(page)
@@ -82,11 +85,13 @@ class CommentsView(APIView):
         if parent_id:
             parent_comment = get_object_or_404(Comment, id=parent_id)
             comment.parent = parent_comment
+            
             if parent_comment.author != request.user:
                 Notification.objects.get_or_create(notification_type="CR", post=comment.post, comment=comment, to_user=parent_comment.author, from_user=request.user)
         else:
             if post.author != request.user:
                 Notification.objects.get_or_create(notification_type="C", post=comment.post, comment=comment, to_user=post.author, from_user=request.user)
+        comment.save()
         serialzer =  CommentSerializer(comment, many=False, context={'request':request})
         return Response(serialzer.data, status=status.HTTP_201_CREATED)
     
@@ -123,12 +128,27 @@ class UserPostView(APIView):
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,),)
 def notifications(request):
-    user_notifications = Notification.objects.filter(to_user=request.user)
+    user_notifications = Notification.objects.filter(to_user=request.user)[:40]
     serializer = NotificationSerializer(user_notifications, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
-        
-    
 
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,),)
+def unseen_notifications_count(request):
+    user_notifications = Notification.objects.filter(has_been_seen=False, to_user=request.user).count()
+    print(user_notifications)
+    return Response(user_notifications, status=status.HTTP_200_OK)
+
+        
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,),)
+def seen_notifications(request):
+    user_notifications = Notification.objects.filter(to_user=request.user)
+    unseen_notifications = user_notifications.filter(has_been_seen=False)
+    for n in unseen_notifications:
+        n.has_been_seen = True
+        n.save()
+    return Response("OK", status=status.HTTP_200_OK)
 
 @api_view(["PATCH"])
 @permission_classes((IsAuthenticated,),)

@@ -14,4 +14,6 @@ urlpatterns = [
     path("comment/<int:pk>/", views.CommentView.as_view()),
     path("comment-delete/<int:pk>", views.CommentView.as_view()),
     path("notifications", views.notifications),
+     path("seen-notifications", views.seen_notifications),
+     path("unseen-notifications-count", views.unseen_notifications_count),
 ]

@@ -8,6 +8,7 @@ class TypeBaseSerializer(serializers.ModelSerializer):
     author = UserLessInfoSerializer(read_only=True, many=False)
     am_i_author = serializers.SerializerMethodField(read_only=True)
     is_liked_by_me = serializers.SerializerMethodField(read_only=True)
+    am_i_following_author = serializers.SerializerMethodField(read_only=True)
     likes = serializers.SerializerMethodField(read_only=True)
 
     def get_am_i_author(self,obj):
@@ -16,6 +17,14 @@ class TypeBaseSerializer(serializers.ModelSerializer):
 
     def get_likes(self,obj):
         return obj.likes.count()
+    
+    def get_am_i_following_author(self, obj):
+        current_user = self.context.get('request').user
+        if current_user == obj.author: return True 
+        if obj.author in current_user.following.all():
+            return True 
+        return False
+
 
     def get_is_liked_by_me(self,obj):
         current_user = self.context.get('request').user

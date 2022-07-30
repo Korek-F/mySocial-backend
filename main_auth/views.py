@@ -96,7 +96,6 @@ class EditUser(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
     def patch(self, request):
         user = request.user
-        print(request.data)
         serializer = UserSerializer(user, request.data, partial=True, context={'request':request})
         if serializer.is_valid():
             serializer.save()
