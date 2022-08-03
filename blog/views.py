@@ -80,7 +80,7 @@ class CommentsView(APIView):
         post = get_object_or_404(Post, pk=id)
         content = request.data.get("content")
         parent_id = request.data.get("parent_id")
-        comment = Comment.object.create(author=user, post=post,content=content)
+        comment = Comment.objects.create(author=user, post=post,content=content)
         if parent_id:
             parent_comment = get_object_or_404(Comment, id=parent_id)
             comment.parent = parent_comment

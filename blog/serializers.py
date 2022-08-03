@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Notification, Post, Comment
 from main_auth.serializers import UserLessInfoSerializer 
 from django.db.models import Count
+from django.contrib.auth.models import AnonymousUser
 
 
 class TypeBaseSerializer(serializers.ModelSerializer):
@@ -20,6 +21,7 @@ class TypeBaseSerializer(serializers.ModelSerializer):
     
     def get_am_i_following_author(self, obj):
         current_user = self.context.get('request').user
+        if not current_user.is_authenticated: return False 
         if current_user == obj.author: return True 
         if obj.author in current_user.following.all():
             return True 

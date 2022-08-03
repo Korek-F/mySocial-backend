@@ -32,7 +32,7 @@ class Comment(models.Model):
         return self.likes.count()
 
     def __str__(self):
-        return str(self.pk) + " - " + self.author.username + " - " +self.content[:20]
+        return str(self.pk) + " - " + self.author.username + " - " +self.content[:20]+"..."
     
 class Notification(models.Model):
     notifi_types = [
