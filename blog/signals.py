@@ -9,7 +9,6 @@ from .serializers import NotificationSerializer
 
 @receiver(post_save, sender=Notification)
 def create_new_notification(sender, instance, created, *args, **kwargs):
-    print("TESTO")
     if created:
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(

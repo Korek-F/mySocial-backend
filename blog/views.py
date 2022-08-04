@@ -134,7 +134,6 @@ def notifications(request):
 @permission_classes((IsAuthenticated,),)
 def unseen_notifications_count(request):
     user_notifications = Notification.objects.filter(has_been_seen=False, to_user=request.user).count()
-    print(user_notifications)
     return Response(user_notifications, status=status.HTTP_200_OK)
 
         

@@ -127,9 +127,60 @@ class BlogViewTest(TestCase):
         response = client.delete("/blog/comment-delete/1")
         self.assertEqual(response.status_code,200)
         
+    def test_user_posts_view(self):
+        Post.objects.create(body="test_body", author=self.user2, title="test_title")
+        Post.objects.create(body="test_body2",author=self.user2, title="test_title2")
 
-
+        client = self.api_client()
+        response = client.get("/blog/user/Jan")
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(len(data),2)
     
+    def test_like_dislike_post_view(self):
+        Post.objects.create(body="test_body", author=self.user2, title="test_title")
+
+        client = self.api_client()
+
+        response = client.get("/blog/post/1/")
+        data = json.loads(response.content)
+        self.assertEqual(data["likes"],0)
+
+        #like post
+        client.patch("/blog/post/like-dislike", {"id":1})
+        response = client.get("/blog/post/1/")
+        data = json.loads(response.content)
+        self.assertEqual(data["likes"],1)
+
+        #dislike post
+        client.patch("/blog/post/like-dislike", {"id":1})
+        response = client.get("/blog/post/1/")
+        data = json.loads(response.content)
+        self.assertEqual(data["likes"],0)
+
+    def test_like_dislike_comment_view(self):
+        post = Post.objects.create(body="test_body", author=self.user2, title="test_title")
+        Comment.objects.create(content="test_content", post=post, author=self.user1)
+
+        client = self.api_client2()
+
+        response = client.get("/blog/comment/1/")
+        data = json.loads(response.content)
+        self.assertEqual(data["likes"],0)
+
+        #like post
+        client.patch("/blog/comment/like-dislike", {"id":1})
+        response = client.get("/blog/comment/1/")
+        data = json.loads(response.content)
+        self.assertEqual(data["likes"],1)
+        
+        #dislike post
+        client.patch("/blog/comment/like-dislike", {"id":1})
+        response = client.get("/blog/comment/1/")
+        data = json.loads(response.content)
+        self.assertEqual(data["likes"],0)
 
 
 
+
+       
