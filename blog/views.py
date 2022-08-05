@@ -162,7 +162,7 @@ def like_dislike_post(request):
             post=post, to_user=post.author, from_user=request.user)
     post.save()
     serializer = PostSerializer(post, many=False,context={'request':request})
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 @api_view(["PATCH"])
 @permission_classes((IsAuthenticated,),)
@@ -175,7 +175,7 @@ def like_dislike_comment(request):
     else:
         comment.likes.add(user)
         if request.user != comment.author:
-            Notification.objects.get_or_create(notification_type="CL", post=comment.post, comment=comment, to_user=comment.author, from_user=request.user)
+            Notification.objects.get_or_create(notification_type="LC", post=comment.post, comment=comment, to_user=comment.author, from_user=request.user)
     comment.save() 
     serializer = CommentSerializer(comment, many=False, context={'request':request})
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)

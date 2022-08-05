@@ -179,6 +179,66 @@ class BlogViewTest(TestCase):
         response = client.get("/blog/comment/1/")
         data = json.loads(response.content)
         self.assertEqual(data["likes"],0)
+    
+    def test_notifications(self):
+        post = Post.objects.create(body="test_body", author=self.user2, title="test_title")
+        
+        client = self.api_client()
+        client2 = self.api_client2()
+
+        #New comment notification
+            #Creating new comment 
+        response = client.post("/blog/post/1/details",{"content":"test_content2"})
+        self.assertEqual(response.status_code, 201)
+            #Checking if notification was created
+        response = client2.get("/blog/notifications")
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(data[0]["notification_type"], "C")
+
+        #New post like notification
+            #Creating new like
+        client.patch("/blog/post/like-dislike", {"id":1})
+        self.assertEqual(response.status_code, 200)
+            #Checking if notification was created
+        response = client2.get("/blog/notifications")
+        data = json.loads(response.content)
+        self.assertEqual(data[0]["notification_type"], "L")
+
+        #New post like notification
+            #Creating new like
+        client2.patch("/blog/comment/like-dislike", {"id":1})
+            #Checking if notification was created
+        response = client.get("/blog/notifications")
+        data = json.loads(response.content)
+        self.assertEqual(data[0]["notification_type"], "LC")
+
+        #New follow notification
+            #Creating new follow
+        response = client2.post("/auth/follow-action/", {"username":"Filip"})
+        self.assertEqual(response.status_code, 200)
+            #Checking if notification was created
+        response = client.get("/blog/notifications")
+        data = json.loads(response.content)
+        self.assertEqual(data[0]["notification_type"], "F")
+
+        #New comment response notification
+            #Creating new comment response
+        response = client2.post("/blog/post/1/details",{"parent_id":1,"content":"test_content3"})
+        self.assertEqual(response.status_code, 201)
+            #Checking if notification was created
+        response = client.get("/blog/notifications")
+        data = json.loads(response.content)
+        self.assertEqual(data[0]["notification_type"], "CR")
+
+        #Unseen notification count 
+        response = client.get("/blog/unseen-notifications-count")
+        data = json.loads(response.content)
+        self.assertEqual(response.content, b'3')
+
+
+
+
 
 
 
