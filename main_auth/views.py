@@ -61,8 +61,9 @@ class VerifyEmail(views.APIView):
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             user = User.objects.get(id=payload['user_id'])
-            if not user.is_verified:
+            if not user.is_verified or not user.is_active:
                 user.is_verified = True
+                user.is_active = True
                 user.save()
             return Response({'email': 'Successfully activated'}, status=status.HTTP_200_OK)
         except jwt.ExpiredSignatureError as identifier:

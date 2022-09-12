@@ -2,7 +2,13 @@ from django.test import TestCase
 from .models import User
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
+
+
+
+
 # Create your tests here.
+
+
 class UserModelTestCase(TestCase):
     def create_user(self, username="Test", email="test@onet.pl", password="testpassword123"):
         return User.objects.create_user(username=username, email=email, password=password)

@@ -7,6 +7,8 @@ from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
 import json
+from django.urls import reverse
+
 
 class TestBlogModels(TestCase):
     def setUp(self):
@@ -54,33 +56,33 @@ class BlogViewTest(TestCase):
     def test_posts_and_post_view(self):
         client = self.api_client()
 
-        response = client.get("/blog/posts")
+        response = client.get(reverse("posts"))
         self.assertEqual(response.status_code, 200)
        
-        response = client.post("/blog/posts",{"title":"test_title", "body":"test_body"})
+        response = client.post(reverse("posts"),{"title":"test_title", "body":"test_body"})
         self.assertEqual(response.status_code, 201)
 
-        response = client.get("/blog/posts")
+        response = client.get(reverse("posts"))
         data = json.loads(response.content)["data"][0]
         self.assertEqual(data["body"], "test_body")
         self.assertEqual(data["title"], "test_title")
 
 
         client2 = self.api_client2()
-        response = client2.get("/blog/post/1/")
+        response = client2.get(reverse('post_details', kwargs={'pk':1}))
         self.assertEqual(response.status_code, 200)
 
         data = json.loads(response.content)
         self.assertEqual(data["body"], "test_body")
         self.assertEqual(data["title"], "test_title")
 
-        response = client2.get("/blog/post/2/")
+        response = client2.get(reverse('post_details', kwargs={'pk':2}))
         self.assertEqual(response.status_code, 404)
 
 
-        response = client2.delete("/blog/post-delete/1")
+        response = client2.delete(reverse('posts_delete', kwargs={'pk':1}))
         self.assertEqual(response.status_code, 403)
-        response = client.delete("/blog/post-delete/1")
+        response = client.delete(reverse('posts_delete', kwargs={'pk':1}))
         self.assertEqual(response.status_code, 200)
     
     def test_comments_and_comment_view(self):
@@ -88,15 +90,15 @@ class BlogViewTest(TestCase):
 
         client = self.api_client()
 
-        response = client.get("/blog/post/1/details")
+        response = client.get(reverse('post_comments', kwargs={'id':1}))
         self.assertEqual(response.status_code, 200)
 
         #creating comment
-        response = client.post("/blog/post/1/details",{"content":"test_content"})
+        response = client.post(reverse('post_comments', kwargs={'id':1}),{"content":"test_content"})
         self.assertEqual(response.status_code,201)
 
         #checking comment
-        response = client.get("/blog/post/1/details")
+        response = client.get(reverse('post_comments', kwargs={'id':1}))
         data = json.loads(response.content)[0]
         self.assertEqual(data["content"],"test_content")
         self.assertEqual(data["post"],1)
@@ -104,11 +106,11 @@ class BlogViewTest(TestCase):
 
         #creating sub-comment
         client2 = self.api_client2()
-        response = client2.post("/blog/post/1/details",{"parent_id":1,"content":"test_content2"})
+        response = client2.post(reverse('post_comments', kwargs={'id':1}),{"parent_id":1,"content":"test_content2"})
         self.assertEqual(response.status_code,201)
         
         #checking sub-comment
-        response = client.get("/blog/post/1/details")
+        response = client.get(reverse('post_comments', kwargs={'id':1}))
         data = json.loads(response.content)[0]["comment_child"][0]
         self.assertEqual(data["content"],"test_content2")
         self.assertEqual(data["parent"],1)
@@ -116,15 +118,15 @@ class BlogViewTest(TestCase):
 
 
         #checking comment in single comment view
-        response = client.get("/blog/comment/1/")
+        response = client.get(reverse('comment', kwargs={'pk':1}))
         data=json.loads(response.content)
         self.assertEqual(data["content"],"test_content")
         self.assertEqual(data["comment_child"][0]["content"],"test_content2")
 
         #deleting sub-comment 
-        response = client2.delete("/blog/comment-delete/1")
+        response = client2.delete(reverse('comment_delete', kwargs={'pk':1}))
         self.assertEqual(response.status_code,403)
-        response = client.delete("/blog/comment-delete/1")
+        response = client.delete(reverse('comment_delete', kwargs={'pk':1}))
         self.assertEqual(response.status_code,200)
         
     def test_user_posts_view(self):
@@ -132,7 +134,7 @@ class BlogViewTest(TestCase):
         Post.objects.create(body="test_body2",author=self.user2, title="test_title2")
 
         client = self.api_client()
-        response = client.get("/blog/user/Jan")
+        response = client.get(reverse('user_posts', kwargs={'username':"Jan"}))
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEqual(len(data),2)
@@ -142,19 +144,19 @@ class BlogViewTest(TestCase):
 
         client = self.api_client()
 
-        response = client.get("/blog/post/1/")
+        response = client.get(reverse('post_details', kwargs={'pk':1}))
         data = json.loads(response.content)
         self.assertEqual(data["likes"],0)
 
         #like post
-        client.patch("/blog/post/like-dislike", {"id":1})
-        response = client.get("/blog/post/1/")
+        client.patch(reverse('post_like_dislike'), {"id":1})
+        response = client.get(reverse('post_details', kwargs={'pk':1}))
         data = json.loads(response.content)
         self.assertEqual(data["likes"],1)
 
         #dislike post
-        client.patch("/blog/post/like-dislike", {"id":1})
-        response = client.get("/blog/post/1/")
+        client.patch(reverse('post_like_dislike'), {"id":1})
+        response = client.get(reverse('post_details', kwargs={'pk':1}))
         data = json.loads(response.content)
         self.assertEqual(data["likes"],0)
 
@@ -164,19 +166,19 @@ class BlogViewTest(TestCase):
 
         client = self.api_client2()
 
-        response = client.get("/blog/comment/1/")
+        response = client.get(reverse('comment', kwargs={'pk':1}))
         data = json.loads(response.content)
         self.assertEqual(data["likes"],0)
 
         #like post
-        client.patch("/blog/comment/like-dislike", {"id":1})
-        response = client.get("/blog/comment/1/")
+        client.patch(reverse('comment_like_dislike'), {"id":1})
+        response = client.get(reverse('comment', kwargs={'pk':1}))
         data = json.loads(response.content)
         self.assertEqual(data["likes"],1)
         
         #dislike post
-        client.patch("/blog/comment/like-dislike", {"id":1})
-        response = client.get("/blog/comment/1/")
+        client.patch(reverse('comment_like_dislike'), {"id":1})
+        response = client.get(reverse('comment', kwargs={'pk':1}))
         data = json.loads(response.content)
         self.assertEqual(data["likes"],0)
     
@@ -188,28 +190,28 @@ class BlogViewTest(TestCase):
 
         #New comment notification
             #Creating new comment 
-        response = client.post("/blog/post/1/details",{"content":"test_content2"})
+        response = client.post(reverse('post_comments', kwargs={"id":1}), {"content":"test_content2"})
         self.assertEqual(response.status_code, 201)
             #Checking if notification was created
-        response = client2.get("/blog/notifications")
+        response = client2.get(reverse("notifications"))
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEqual(data[0]["notification_type"], "C")
 
         #New post like notification
             #Creating new like
-        client.patch("/blog/post/like-dislike", {"id":1})
+        client.patch(reverse("post_like_dislike"), {"id":1})
         self.assertEqual(response.status_code, 200)
             #Checking if notification was created
-        response = client2.get("/blog/notifications")
+        response = client2.get(reverse("notifications"))
         data = json.loads(response.content)
         self.assertEqual(data[0]["notification_type"], "L")
 
         #New post like notification
             #Creating new like
-        client2.patch("/blog/comment/like-dislike", {"id":1})
+        client2.patch(reverse("comment_like_dislike"), {"id":1})
             #Checking if notification was created
-        response = client.get("/blog/notifications")
+        response = client.get(reverse("notifications"))
         data = json.loads(response.content)
         self.assertEqual(data[0]["notification_type"], "LC")
 
@@ -218,21 +220,21 @@ class BlogViewTest(TestCase):
         response = client2.post("/auth/follow-action/", {"username":"Filip"})
         self.assertEqual(response.status_code, 200)
             #Checking if notification was created
-        response = client.get("/blog/notifications")
+        response = client.get(reverse("notifications"))
         data = json.loads(response.content)
         self.assertEqual(data[0]["notification_type"], "F")
 
         #New comment response notification
             #Creating new comment response
-        response = client2.post("/blog/post/1/details",{"parent_id":1,"content":"test_content3"})
+        response = client2.post(reverse('post_comments', kwargs={'id':1}),{"parent_id":1,"content":"test_content3"})
         self.assertEqual(response.status_code, 201)
             #Checking if notification was created
-        response = client.get("/blog/notifications")
+        response = client.get(reverse("notifications"))
         data = json.loads(response.content)
         self.assertEqual(data[0]["notification_type"], "CR")
 
         #Unseen notification count 
-        response = client.get("/blog/unseen-notifications-count")
+        response = client.get(reverse("unseen_notifications_count"))
         data = json.loads(response.content)
         self.assertEqual(response.content, b'3')
 

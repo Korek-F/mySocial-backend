@@ -27,6 +27,7 @@ class JwtAuthMiddleware(BaseMiddleware):
         close_old_connections()
 
         token = parse_qs(scope["query_string"].decode("utf8"))["token"][0]
+        print("Token ",token)
 
         try:
             UntypedToken(token)
