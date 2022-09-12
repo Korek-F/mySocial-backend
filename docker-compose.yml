@@ -1,0 +1,47 @@
+version: '3.9'
+
+services: 
+  redis:
+    image: redis
+    command: redis-server
+    ports:
+      - "6379:6379"
+  django_gunicorn:
+    build: 
+      context: .
+    command: python3 /code/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+      - static:/static
+      - ./media:/code/media
+    ports: 
+      - "8000:8000"
+    depends_on:
+      - db
+  nginx:
+    build: ./nginx
+    volumes:
+      - static:/static
+      - ./media:/code/media
+    links:
+      - "django_gunicorn"
+    ports:
+      - "80:80"
+    depends_on:
+      - django_gunicorn
+  db: 
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - "POSTGRES_HOST_AUTH_METHOD=trust"
+
+networks: 
+  default:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  static:
+  media:
+    

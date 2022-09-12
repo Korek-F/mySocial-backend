@@ -75,9 +75,7 @@ coverage.xml
 .pytest_cache/
 cover/
 
-.dockerignore
-Dockerfile 
-docker-compose.yml
+
 entrypoint.sh
 ToDo.txt
 
