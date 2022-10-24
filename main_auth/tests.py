@@ -1,3 +1,4 @@
+from urllib import response
 from django.test import TestCase
 from .models import User
 from rest_framework.test import APIClient
@@ -70,3 +71,11 @@ class UserViewTest(TestCase):
         response = self.client.post("/auth/token/"
         ,{"username":"John","password":"testpasssword123" })
         self.assertEqual(response.status_code, 200)
+    
+
+    def test_delete_account_view(self):
+        client = self.api_client()
+        response = client.patch("/auth/delete-user/",{})
+        self.assertEqual(response.status_code, 200)
+        response = client.patch("/auth/delete-user/",{})
+        self.assertEqual(response.status_code, 401)

@@ -12,5 +12,7 @@ urlpatterns = [
     path('email-verify/', views.VerifyEmail.as_view(), name="email-verify"),
     path('get-user/<str:username>', views.UserDetail.as_view()),
     path('follow-action/', views.follow_action),
-    path('edit-user/', views.EditUser.as_view())
+    path('edit-user/', views.EditUser.as_view()),
+    path('delete-user/', views.DeleteUserView.as_view()),
+    path('change-password/', views.ChangePasswordView.as_view()),
 ]

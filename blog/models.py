@@ -1,3 +1,4 @@
+from email.policy import default
 from django.db import models
 from main_auth.models import User
 from django.db.models.signals import post_save
@@ -23,6 +24,7 @@ class Comment(models.Model):
     content = models.TextField(max_length=1000)
     created = models.DateTimeField(auto_now_add=True)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name="comment_child")
+    ancestor_number = models.IntegerField(default=0)
 
     class Meta:
         ordering = ["created"]

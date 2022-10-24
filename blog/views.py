@@ -84,6 +84,7 @@ class CommentsView(APIView):
         if parent_id:
             parent_comment = get_object_or_404(Comment, id=parent_id)
             comment.parent = parent_comment
+            comment.ancestor_number = parent_comment.ancestor_number + 1
             comment.save()
             if parent_comment.author != request.user:
                 Notification.objects.get_or_create(notification_type="CR", post=comment.post, comment=comment, to_user=parent_comment.author, from_user=request.user)

@@ -42,4 +42,9 @@ class UserSerializer(serializers.ModelSerializer):
         current_user = self.context.get('request').user
 
         return True if current_user in obj.followed.all() else False
+
+class ChangePasswordSerializer(serializers.Serializer):
+    model = User 
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
     
