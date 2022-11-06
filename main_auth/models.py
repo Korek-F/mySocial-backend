@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager, PermissionsMixin)
 
+
 class UserManager(BaseUserManager):
 
     def create_user(self, username, email, password=None):
@@ -30,13 +31,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255,unique=True, db_index=True)
     name = models.CharField(max_length=255, blank=True)
     is_verified = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     following = models.ManyToManyField("User",related_name="followed", symmetrical=False, blank=True)
     avatar = models.ImageField(blank=True,upload_to="user_avatars")
     cover = models.ImageField(blank=True,upload_to="user_covers")
+    
+
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']

@@ -79,3 +79,5 @@ class UserViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         response = client.patch("/auth/delete-user/",{})
         self.assertEqual(response.status_code, 401)
+
+ 

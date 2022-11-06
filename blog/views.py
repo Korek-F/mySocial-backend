@@ -54,6 +54,7 @@ class PostView(APIView):
 
     def get(self, request,pk):
         post = self.get_object(pk)
+        print(request.user)
         serializer = PostSerializer(post,context={'request':request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -115,7 +116,7 @@ class UserPostView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self, username):
-        user = User.objects.all().get(username=username)
+        user = get_object_or_404(User, username=username)
         return Post.objects.all().filter(author=user)
     
     def get(self, request,username):
